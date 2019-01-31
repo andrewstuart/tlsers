@@ -17,13 +17,6 @@ import (
 type SelfSigner struct {
 }
 
-// GetCertificate is useful for use in the tls.Config.GetCertificate function.
-func CertFunc(c Certer) func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-		return c.Cert(hello.ServerName)
-	}
-}
-
 func (s *SelfSigner) Cert(cn string) (*tls.Certificate, error) {
 	priv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
