@@ -3,7 +3,6 @@ package tlsserve
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,31 +14,30 @@ import (
 func TestSelf(t *testing.T) {
 	asrt := assert.New(t)
 	s := SelfSigner{}
-	c, err := s.Cert("localhost")
-	asrt.NoError(err)
-
-	tc := &tls.Config{
-		Certificates: []tls.Certificate{*c},
-	}
-
-	p := x509.NewCertPool()
-	asrt.True(p.AppendCertsFromPEM(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.Certificate[0]})), "appended pool")
-	tc.RootCAs = p
-
-	l, err := tls.Listen("tcp", "localhost:8088", tc)
-	asrt.NoError(err)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "hello world")
 	})
 
-	go http.Serve(l, nil)
+	srv := http.Server{
+		Addr: "localhost:8088",
+		TLSConfig: &tls.Config{
+			GetCertificate: s.GetCertificate,
+		},
+	}
 
 	hc := http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: tc,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				VerifyPeerCertificate: func(_ [][]byte, _ [][]*x509.Certificate) error {
+					return nil
+				},
+			},
 		},
 	}
+
+	go srv.ListenAndServeTLS("", "")
 
 	res, err := hc.Get("https://localhost:8088/")
 	asrt.NoError(err)
@@ -48,6 +46,4 @@ func TestSelf(t *testing.T) {
 	asrt.NoError(err)
 
 	asrt.Equal(bs, []byte("hello world"))
-
-	l.Close()
 }

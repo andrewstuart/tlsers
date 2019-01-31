@@ -16,6 +16,10 @@ import (
 type SelfSigner struct {
 }
 
+func (s *SelfSigner) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	return s.Cert(hello.ServerName)
+}
+
 func (s *SelfSigner) Cert(cn string) (*tls.Certificate, error) {
 	priv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
