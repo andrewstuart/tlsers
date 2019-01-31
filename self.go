@@ -8,6 +8,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,9 +16,16 @@ import (
 
 // A SelfSigner returns certificates that are self-signed.
 type SelfSigner struct {
+	m *sync.Mutex
+	c *tls.Certificate
 }
 
 func (s *SelfSigner) Cert(cn string) (*tls.Certificate, error) {
+	s.m.Lock()
+	defer s.m.Unlock()
+	if s.c != nil {
+		return s.c, nil
+	}
 	priv, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -41,8 +49,9 @@ func (s *SelfSigner) Cert(cn string) (*tls.Certificate, error) {
 		return nil, errors.Wrap(err, "create")
 	}
 
-	return &tls.Certificate{
+	s.c = &tls.Certificate{
 		PrivateKey:  priv,
 		Certificate: [][]byte{der},
-	}, nil
+	}
+	return s.c, nil
 }
