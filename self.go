@@ -13,11 +13,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// A SelfSigner returns certificates that are self-signed.
 type SelfSigner struct {
 }
 
-func (s *SelfSigner) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	return s.Cert(hello.ServerName)
+// GetCertificate is useful for use in the tls.Config.GetCertificate function.
+func CertFunc(c Certer) func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+	return func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+		return c.Cert(hello.ServerName)
+	}
 }
 
 func (s *SelfSigner) Cert(cn string) (*tls.Certificate, error) {

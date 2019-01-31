@@ -13,7 +13,6 @@ import (
 
 func TestSelf(t *testing.T) {
 	asrt := assert.New(t)
-	s := SelfSigner{}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "hello world")
@@ -22,7 +21,7 @@ func TestSelf(t *testing.T) {
 	srv := http.Server{
 		Addr: "localhost:8088",
 		TLSConfig: &tls.Config{
-			GetCertificate: s.GetCertificate,
+			GetCertificate: CertFunc(&SelfSigner{}),
 		},
 	}
 
