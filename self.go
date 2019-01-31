@@ -1,4 +1,4 @@
-package tlsserve
+package tlsers
 
 import (
 	"crypto/ecdsa"

@@ -1,4 +1,4 @@
-module astuart.co/tlsserve
+module astuart.co/tlsers
 
 require (
 	github.com/pkg/errors v0.8.1
