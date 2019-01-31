@@ -16,7 +16,7 @@ import (
 
 // A SelfSigner returns certificates that are self-signed.
 type SelfSigner struct {
-	m *sync.Mutex
+	m sync.Mutex
 	c *tls.Certificate
 }
 
