@@ -1,4 +1,4 @@
-module astuart.co/tlsers
+module github.com/andrewstuart/tlsers
 
 require (
 	github.com/pkg/errors v0.8.1
